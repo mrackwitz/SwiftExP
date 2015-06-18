@@ -8,7 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		29A0EAC11B327A01009DE2DF /* ParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29A0EAC01B327A01009DE2DF /* ParserTests.swift */; };
+		29A0EACD1B32C10A009DE2DF /* Parser+File.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29A0EACC1B32C10A009DE2DF /* Parser+File.swift */; };
 		29A0EACF1B32C2BC009DE2DF /* ModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29A0EACE1B32C2BC009DE2DF /* ModelTests.swift */; };
+		29A0EAD21B32C62E009DE2DF /* test.swift-ast in Resources */ = {isa = PBXBuildFile; fileRef = 29A0EAD11B32C62E009DE2DF /* test.swift-ast */; };
 		29E222921B2F92210091F427 /* SwiftExP.h in Headers */ = {isa = PBXBuildFile; fileRef = 29E222911B2F92210091F427 /* SwiftExP.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		29E222991B2F92210091F427 /* SwiftExP.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 29E2228E1B2F92210091F427 /* SwiftExP.framework */; };
 		29E222A91B2F954E0091F427 /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29E222A81B2F954E0091F427 /* Model.swift */; };
@@ -29,7 +31,9 @@
 /* Begin PBXFileReference section */
 		29A0EAC01B327A01009DE2DF /* ParserTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ParserTests.swift; sourceTree = "<group>"; };
 		29A0EAC21B329E3D009DE2DF /* libswiftXCTest.tbd */ = {isa = PBXFileReference; lastKnownFileType = text; name = libswiftXCTest.tbd; path = System/Library/PrivateFrameworks/Swift/libswiftXCTest.tbd; sourceTree = SDKROOT; };
+		29A0EACC1B32C10A009DE2DF /* Parser+File.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Parser+File.swift"; sourceTree = "<group>"; };
 		29A0EACE1B32C2BC009DE2DF /* ModelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModelTests.swift; sourceTree = "<group>"; };
+		29A0EAD11B32C62E009DE2DF /* test.swift-ast */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "test.swift-ast"; sourceTree = "<group>"; };
 		29E2228E1B2F92210091F427 /* SwiftExP.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SwiftExP.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		29E222911B2F92210091F427 /* SwiftExP.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SwiftExP.h; sourceTree = "<group>"; };
 		29E222931B2F92210091F427 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -67,6 +71,14 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		29A0EAD01B32C62E009DE2DF /* Fixtures */ = {
+			isa = PBXGroup;
+			children = (
+				29A0EAD11B32C62E009DE2DF /* test.swift-ast */,
+			);
+			path = Fixtures;
+			sourceTree = "<group>";
+		};
 		29E222841B2F92210091F427 = {
 			isa = PBXGroup;
 			children = (
@@ -91,6 +103,7 @@
 				29E222911B2F92210091F427 /* SwiftExP.h */,
 				29E222A81B2F954E0091F427 /* Model.swift */,
 				29FA06A11B2FBE9B00493CF0 /* Parser.swift */,
+				29A0EACC1B32C10A009DE2DF /* Parser+File.swift */,
 				29FA069F1B2FA51F00493CF0 /* Scanner.swift */,
 				29E222931B2F92210091F427 /* Info.plist */,
 			);
@@ -103,6 +116,7 @@
 				29A0EACE1B32C2BC009DE2DF /* ModelTests.swift */,
 				29A0EAC01B327A01009DE2DF /* ParserTests.swift */,
 				29E2229F1B2F92210091F427 /* Info.plist */,
+				29A0EAD01B32C62E009DE2DF /* Fixtures */,
 				29A0EAC71B329E73009DE2DF /* Frameworks */,
 			);
 			path = SwiftExPTests;
@@ -206,6 +220,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				29A0EAD21B32C62E009DE2DF /* test.swift-ast in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -216,6 +231,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				29A0EACD1B32C10A009DE2DF /* Parser+File.swift in Sources */,
 				29FA06A01B2FA51F00493CF0 /* Scanner.swift in Sources */,
 				29E222A91B2F954E0091F427 /* Model.swift in Sources */,
 				29FA06A21B2FBE9B00493CF0 /* Parser.swift in Sources */,

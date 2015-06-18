@@ -159,4 +159,13 @@ class ParserTests: XCTestCase {
         SWEXPThrow(Error.IllegalHexCharacter(char: " "), try Parser.parse("\"\\u    \""))
     }
     
+    // MARK: Fixtures
+    
+    func test_301_swiftAstDump() {
+        let bundle = NSBundle(forClass: ParserTests.self)
+        let path = bundle.pathForResource("test", ofType: "swift-ast")!
+        let expr = try! Parser.parse(contentsOfFile: path)
+        XCTAssertEqual(String(expr), "")
+    }
+    
 }
