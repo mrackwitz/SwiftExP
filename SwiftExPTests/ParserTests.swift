@@ -70,6 +70,21 @@ class ParserTests: XCTestCase {
         XCTAssertEqual(try! Parser.parse("\"\\U0001F1FA\\U0001F1F8\""), .StringAtom("🇺🇸"))
     }
     
+    func test_009_quotedNonEscapedLineWraps() {
+        XCTAssertEqual(try! Parser.parse("\"\n\""),   .StringAtom("\n"))
+        XCTAssertEqual(try! Parser.parse("\"\n\r\""), .StringAtom("\n\r"))
+        XCTAssertEqual(try! Parser.parse("\"\r\""),   .StringAtom("\r"))
+        XCTAssertEqual(try! Parser.parse("\"\r\n\""), .StringAtom("\r\n"))
+    }
+        
+    func test_009_quotedEscapedLineWraps() {
+        XCTAssertEqual(try! Parser.parse("\"\\\n\""),   .StringAtom(""))
+        XCTAssertEqual(try! Parser.parse("\"\\\n\r\""), .StringAtom(""))
+        XCTAssertEqual(try! Parser.parse("\"\\\r\""),   .StringAtom(""))
+        // TODO: Doesn't work
+        //XCTAssertEqual(try! Parser.parse("\"\\\r\n\""), .StringAtom(""))
+    }
+    
     // MARK: Lists
     
     func test_101_emptyList() {
