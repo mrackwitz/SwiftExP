@@ -185,15 +185,17 @@ public struct Parser {
     }
     
     static let whitespaceChars: Set<Character> = Set(" \r\t\n".characters)
-    static let quotationChars: Set<Character> = Set("\"".characters)
-    static let protectedChars: Set<Character> = Parser.whitespaceChars.union(Set("\"()".characters))
+    static let quotationChars:  Set<Character> = Set("'\"".characters)
+    static let listChars:       Set<Character> = Set("()".characters)
+    static let protectedChars = [whitespaceChars, quotationChars, listChars].reduce(Set()) { $0.union($1) }
+    
     static let digitChars: Set<Character> = Set("0123456789".characters)
-    static let integerChars = Parser.digitChars
     static let decimalSeparatorChar: Character = "."
-    static let decimalChars = Parser.digitChars.union(Set([Parser.decimalSeparatorChar]))
     static let divisionOperatorChar: Character = "/"
-    static let rationalChars = Parser.digitChars.union(Set([Parser.divisionOperatorChar]))
-    static let numberChars = Parser.decimalChars.union(Parser.rationalChars)
+    static let integerChars  = digitChars
+    static let decimalChars  = digitChars.union(Set([decimalSeparatorChar]))
+    static let rationalChars = digitChars.union(Set([divisionOperatorChar]))
+    static let numberChars   = [integerChars, decimalChars, rationalChars].reduce(Set()) { $0.union($1) }
     
     // MARK: Lexical level
     
