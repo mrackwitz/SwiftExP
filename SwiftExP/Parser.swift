@@ -306,7 +306,7 @@ extension Character {
             case "d", "D": return 13
             case "e", "E": return 14
             case "f", "F": return 15
-        default:       throw Error.IllegalHexCharacter(char: self)
+            default:       throw Error.IllegalHexCharacter(char: self)
         }
     }
 }
