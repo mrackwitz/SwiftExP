@@ -11,11 +11,12 @@ import SwiftExP
 
 func SWEXPThrow(expectedError: Error, @autoclosure _ closure: () throws -> (Expression)) -> () {
     do {
-        let _ = try closure()
-        XCTFail("Expected error \"\(expectedError)\", but succeeded")
+        let unexpectedValue = try closure()
+        XCTFail("Expected error \"\(expectedError)\", but succeeded with value "
+            + "\(unexpectedValue)\".")
     } catch let error where error is Error {
         XCTAssertTrue(error as! Error == expectedError, "Catched error \"\(error)\" from expected type, "
-            + "but not the expected value: \"\(expectedError)\"")
+            + "but not the expected case: \"\(expectedError)\"")
     } catch {
         XCTFail("Catched error \"\(error)\", but not the expected type: \"\(expectedError)\"")
     }
