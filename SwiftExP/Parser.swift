@@ -94,11 +94,8 @@ public struct Parser {
     public mutating func parse() throws -> Expression {
         do {
             return try parseExpression()!
-        } catch let error where error is Scanner.Error {
-            switch (error as! Scanner.Error) {
-                case .EOS:
-                    throw Error.UnexpectedEOS
-            }
+        } catch Scanner.Error.EOS {
+            throw Error.UnexpectedEOS
         }
     }
     
