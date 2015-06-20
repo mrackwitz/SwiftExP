@@ -15,8 +15,8 @@ func SWEXPThrow(expectedError: Error, @autoclosure _ closure: () throws -> (Expr
         XCTFail("Expected error \"\(expectedError)\", but succeeded with value "
             + "\(unexpectedValue)\".")
     } catch let error where error is Error {
-        XCTAssertTrue(error as! Error == expectedError, "Catched error \"\(error)\" from expected type, "
-            + "but not the expected case: \"\(expectedError)\"")
+        XCTAssertEqual(error as! Error, expectedError, "Catched error is from expected type, "
+            + "but not the expected case.")
     } catch {
         XCTFail("Catched error \"\(error)\", but not the expected type: \"\(expectedError)\"")
     }
