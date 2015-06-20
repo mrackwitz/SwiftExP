@@ -116,7 +116,7 @@ public struct Parser {
             case nil:
                 throw Scanner.Error.EOS
             default:
-                return try parseAtom()
+                return .Atom(try parseAtom())
         }
     }
     
@@ -126,36 +126,44 @@ public struct Parser {
             while let expr = try parseExpression() {
                 list.append(expr)
             }
-            return .List(list)
+            return Expression(list)
         } catch Scanner.Error.EOS {
             throw Error.NonTerminatedList
         }
     }
     
-    mutating func parseAtom() throws -> Expression {
+    mutating func parseAtom() throws -> Atom {
         if Parser.quotationChars.contains(scanner.currentChar!) {
-            return try .StringAtom(readQuotedString())
+            return try .String(readQuotedString())
         } else {
             let literalString = try readLiteral()
             precondition(literalString != "")
-            let literalStringSet = Set(literalString.characters)
-            if literalStringSet.isSubsetOf(Parser.numberChars) {
-                if literalStringSet.isSubsetOf(Parser.integerChars) {
-                    return .IntegerAtom(Int(literalString)!)
-                } else if literalStringSet.isSubsetOf(Parser.rationalChars) {
-                    return try parseRational(literalString)
-                } else if literalStringSet.isSubsetOf(Parser.decimalChars) {
-                    return try parseDecimal(literalString)
-                } else {
-                    throw Error.IllegalNumberFormat(numberString: literalString)
-                }
-            } else {
-                return .StringAtom(literalString)
-            }
+            return try parseLiteral(literalString)
         }
     }
     
-    func parseRational(string: String) throws -> Expression {
+    func parseLiteral(literalString: String) throws -> Atom {
+        let literalStringSet = Set(literalString.characters)
+        if literalStringSet.isSubsetOf(Parser.numberChars) {
+            if literalStringSet.isSubsetOf(Parser.integerChars) {
+                return parseInteger(literalString)
+            } else if literalStringSet.isSubsetOf(Parser.rationalChars) {
+                return try parseRational(literalString)
+            } else if literalStringSet.isSubsetOf(Parser.decimalChars) {
+                return try parseDecimal(literalString)
+            } else {
+                throw Error.IllegalNumberFormat(numberString: literalString)
+            }
+        } else {
+            return .String(literalString)
+        }
+    }
+    
+    func parseInteger(string: String) -> Atom {
+        return .Integer(Int(string)!)
+    }
+    
+    func parseRational(string: String) throws -> Atom {
         let (maybeNumeratorStr, denominatorStr) = string.readUntil(Parser.divisionOperatorChar)
         if denominatorStr.isEmpty {
             throw Error.IllegalNumberFormat(numberString: string)
@@ -163,13 +171,13 @@ public struct Parser {
         if let numeratorStr = maybeNumeratorStr {
             let numerator = Int(numeratorStr)!
             let denominator = Int(denominatorStr)!
-            return .DecimalAtom(Double(numerator) / Double(denominator))
+            return .Decimal(Double(numerator) / Double(denominator))
         } else {
             throw Scanner.Error.EOS
         }
     }
     
-    func parseDecimal(string: String) throws -> Expression {
+    func parseDecimal(string: String) throws -> Atom {
         let (maybeDecimalStr, mantissaStr) = string.readUntil(Parser.decimalSeparatorChar)
         if mantissaStr.isEmpty {
             throw Error.IllegalNumberFormat(numberString: string)
@@ -178,7 +186,7 @@ public struct Parser {
             let decimal = Int(decimalStr)!
             let mantissa = Int(mantissaStr)!
             let divident = (0 ..< Int(mantissaStr.characters.count)).reduce(1) { (a: Int, _) in return a * 10 }
-            return .DecimalAtom(Double(decimal) + (Double(mantissa) / Double(divident)))
+            return .Decimal(Double(decimal) + (Double(mantissa) / Double(divident)))
         } else {
             throw Scanner.Error.EOS
         }

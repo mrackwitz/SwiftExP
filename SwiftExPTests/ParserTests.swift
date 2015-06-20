@@ -26,63 +26,63 @@ class ParserTests: XCTestCase {
     // MARK: Atoms
     
     func test_001_int() {
-        XCTAssertEqual(try! Parser.parse("1"), .IntegerAtom(1))
+        XCTAssertEqual(try! Parser.parse("1"), Expression(1))
     }
     
     func test_002_rational() {
-        XCTAssertEqual(try! Parser.parse("1/2"), .DecimalAtom(0.5))
+        XCTAssertEqual(try! Parser.parse("1/2"), Expression(0.5))
     }
     
     func test_003_decimal() {
-        XCTAssertEqual(try! Parser.parse("1.23"), .DecimalAtom(1.23))
+        XCTAssertEqual(try! Parser.parse("1.23"), Expression(1.23))
     }
     
     func test_004_string() {
-        XCTAssertEqual(try! Parser.parse("a"),  .StringAtom("a"))
-        XCTAssertEqual(try! Parser.parse("ab"), .StringAtom("ab"))
+        XCTAssertEqual(try! Parser.parse("a"),  Expression("a"))
+        XCTAssertEqual(try! Parser.parse("ab"), Expression("ab"))
     }
     
     func test_005_quotedEmptyString() {
-        XCTAssertEqual(try! Parser.parse("\"\""),  .StringAtom(""))
+        XCTAssertEqual(try! Parser.parse("\"\""),  Expression(""))
     }
     
     func test_006_quotedString() {
-        XCTAssertEqual(try! Parser.parse("\"a\""), .StringAtom("a"))
+        XCTAssertEqual(try! Parser.parse("\"a\""), Expression("a"))
     }
     
     func test_006_quotedEscapedQuotationMark() {
-        XCTAssertEqual(try! Parser.parse("\"\\\"\""), .StringAtom("\""))
+        XCTAssertEqual(try! Parser.parse("\"\\\"\""), Expression("\""))
     }
     
     func test_007_quotedSingleEscapeSequence() {
-        XCTAssertEqual(try! Parser.parse("\"\\t\""),  .StringAtom("\t"))
-        XCTAssertEqual(try! Parser.parse("\"\\n\""),  .StringAtom("\n"))
-        XCTAssertEqual(try! Parser.parse("\"\\r\""),  .StringAtom("\r"))
-        XCTAssertEqual(try! Parser.parse("\"\\'\""),  .StringAtom("'"))
-        XCTAssertEqual(try! Parser.parse("\"\\\\\""), .StringAtom("\\"))
-        XCTAssertEqual(try! Parser.parse("\"\\b\""),  .StringAtom("\u{8}")) // backspace
-        XCTAssertEqual(try! Parser.parse("\"\\v\""),  .StringAtom("\u{b}")) // vertical tab
-        XCTAssertEqual(try! Parser.parse("\"\\f\""),  .StringAtom("\u{c}")) // form-feed
+        XCTAssertEqual(try! Parser.parse("\"\\t\""),  Expression("\t"))
+        XCTAssertEqual(try! Parser.parse("\"\\n\""),  Expression("\n"))
+        XCTAssertEqual(try! Parser.parse("\"\\r\""),  Expression("\r"))
+        XCTAssertEqual(try! Parser.parse("\"\\'\""),  Expression("'"))
+        XCTAssertEqual(try! Parser.parse("\"\\\\\""), Expression("\\"))
+        XCTAssertEqual(try! Parser.parse("\"\\b\""),  Expression("\u{8}")) // backspace
+        XCTAssertEqual(try! Parser.parse("\"\\v\""),  Expression("\u{b}")) // vertical tab
+        XCTAssertEqual(try! Parser.parse("\"\\f\""),  Expression("\u{c}")) // form-feed
     }
     
     func test_008_quotedUnicodeEscapeSequence() {
-        XCTAssertEqual(try! Parser.parse("\"\\u2713\""), .StringAtom("✓"))
-        XCTAssertEqual(try! Parser.parse("\"\\U0001F1FA\\U0001F1F8\""), .StringAtom("🇺🇸"))
+        XCTAssertEqual(try! Parser.parse("\"\\u2713\""), Expression("✓"))
+        XCTAssertEqual(try! Parser.parse("\"\\U0001F1FA\\U0001F1F8\""), Expression("🇺🇸"))
     }
     
     func test_009_quotedNonEscapedLineWraps() {
-        XCTAssertEqual(try! Parser.parse("\"\n\""),   .StringAtom("\n"))
-        XCTAssertEqual(try! Parser.parse("\"\n\r\""), .StringAtom("\n\r"))
-        XCTAssertEqual(try! Parser.parse("\"\r\""),   .StringAtom("\r"))
-        XCTAssertEqual(try! Parser.parse("\"\r\n\""), .StringAtom("\r\n"))
+        XCTAssertEqual(try! Parser.parse("\"\n\""),   Expression("\n"))
+        XCTAssertEqual(try! Parser.parse("\"\n\r\""), Expression("\n\r"))
+        XCTAssertEqual(try! Parser.parse("\"\r\""),   Expression("\r"))
+        XCTAssertEqual(try! Parser.parse("\"\r\n\""), Expression("\r\n"))
     }
         
     func test_009_quotedEscapedLineWraps() {
-        XCTAssertEqual(try! Parser.parse("\"\\\n\""),   .StringAtom(""))
-        XCTAssertEqual(try! Parser.parse("\"\\\n\r\""), .StringAtom(""))
-        XCTAssertEqual(try! Parser.parse("\"\\\r\""),   .StringAtom(""))
+        XCTAssertEqual(try! Parser.parse("\"\\\n\""),   Expression(""))
+        XCTAssertEqual(try! Parser.parse("\"\\\n\r\""), Expression(""))
+        XCTAssertEqual(try! Parser.parse("\"\\\r\""),   Expression(""))
         // TODO: Doesn't work
-        //XCTAssertEqual(try! Parser.parse("\"\\\r\n\""), .StringAtom(""))
+        //XCTAssertEqual(try! Parser.parse("\"\\\r\n\""), Expression(""))
     }
     
     // MARK: Lists
@@ -105,22 +105,22 @@ class ParserTests: XCTestCase {
     
     func test_103_listOfStrings() {
         XCTAssertEqual(try! Parser.parse("(a b)"), .List([
-            .StringAtom("a"),
-            .StringAtom("b")
+            Expression("a"),
+            Expression("b")
         ]))
     }
     
     func test_104_listOfListOfStrings() {
         XCTAssertEqual(try! Parser.parse("((a b) (c d))"), .List([
-            .List([.StringAtom("a"), .StringAtom("b")]),
-            .List([.StringAtom("c"), .StringAtom("d")]),
+            .List([Expression("a"), Expression("b")]),
+            .List([Expression("c"), Expression("d")]),
         ]))
     }
     
     func test_105_listOfListOfStrings() {
         XCTAssertEqual(try! Parser.parse("(( a ) (b))"), .List([
-            .List([.StringAtom("a")]),
-            .List([.StringAtom("b")]),
+            .List([Expression("a")]),
+            .List([Expression("b")]),
         ]))
     }
     
