@@ -6,9 +6,31 @@
 //  Copyright © 2015 Marius Rackwitz. All rights reserved.
 //
 
+public class Box<T> {
+    public let unbox: T
+    
+    public init(_ content: T) {
+        self.unbox = content
+    }
+}
+
+extension Box : Equatable {
+}
+
+public func == <T>(lhs: Box<T>, rhs: Box<T>) -> Bool {
+    preconditionFailure("Inner type '\(lhs.unbox.dynamicType)' is not equatable,"
+        + "but was compared in '\(Box<T>.self)'.")
+}
+
+public func == <T where T: Equatable>(lhs: Box<T>, rhs: Box<T>) -> Bool {
+    return lhs.unbox == rhs.unbox
+}
+
+
 public enum Expression {
     case Atom(SwiftExP.Atom)
     case List([Expression])
+    case Attribute(identifier: SwiftExP.Atom, value: Box<Expression>)
     
     public init(_ string: String) {
         self = .Atom(.String(string))
@@ -24,6 +46,10 @@ public enum Expression {
     
     public init(_ array: [Expression]) {
         self = .List(array)
+    }
+    
+    public init(_ identifier: SwiftExP.Atom, _ value: Expression) {
+        self = .Attribute(identifier: identifier, value: Box(value))
     }
 }
 
@@ -43,6 +69,8 @@ public func ==(lhs: Expression, rhs: Expression) -> Bool {
             return l == r
         case (.List(let l), .List(let r)):
             return l == r
+        case (.Attribute(let lIdentifier, let lValueBox), .Attribute(let rIdentifier, let rValueBox)):
+            return lIdentifier == rIdentifier && lValueBox == rValueBox
         default:
             return false // you're comparing apples with oranges
     }

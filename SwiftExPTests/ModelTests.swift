@@ -35,4 +35,8 @@ class ModelTests: XCTestCase {
         assertDescription(.List([.Atom(.String("a")), .Atom(.String("b"))]), "(\"a\" \"b\")")
     }
     
+    func testAttribute() {
+        assertDescription(Expression(.String("a"), Expression(1)), "\"a\"=1")
+    }
+    
 }

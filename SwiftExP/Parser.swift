@@ -13,6 +13,7 @@ public enum Error : ErrorType {
     case IllegalEscapeSequence(escapeSequence: String)
     case NonTerminatedList
     case NonTerminatedQuotedString
+    case MissingAssigmentValue
     case IllegalHexCharacter(char: Character)
 }
 
@@ -57,6 +58,8 @@ extension Error : CustomStringConvertible {
                 return "NonTerminatedList"
             case .NonTerminatedQuotedString:
                 return "NonTerminatedQuotedString"
+            case .MissingAssigmentValue:
+                return "MissingAssigmentValue"
             case .IllegalHexCharacter(let x):
                 return "IllegalHexCharacter(\(x))"
         }
@@ -113,7 +116,22 @@ public struct Parser {
             case nil:
                 throw Scanner.Error.EOS
             default:
-                return .Atom(try parseAtom())
+                let atom = try parseAtom()
+                if let char = scanner.currentChar where char == Parser.assignmentChar {
+                    do {
+                        try scanner.skipChar()
+                        let maybeValue = try parseExpression()
+                        if let value = maybeValue {
+                            return Expression(atom, value)
+                        } else {
+                            throw Error.MissingAssigmentValue
+                        }
+                    } catch Scanner.Error.EOS {
+                        throw Error.MissingAssigmentValue
+                    }
+                } else {
+                    return .Atom(atom)
+                }
         }
     }
     
@@ -189,9 +207,10 @@ public struct Parser {
         }
     }
     
+    static let assignmentChar:  Character      = "="
     static let whitespaceChars: Set<Character> = Set(" \r\t\n".characters)
     static let quotationChars:  Set<Character> = Set("'\"".characters)
-    static let listChars:       Set<Character> = Set("()".characters)
+    static let listChars:       Set<Character> = Set("()=".characters)
     static let protectedChars = [whitespaceChars, quotationChars, listChars].reduce(Set()) { $0.union($1) }
     
     static let digitChars: Set<Character> = Set("0123456789".characters)

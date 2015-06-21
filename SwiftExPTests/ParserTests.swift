@@ -125,6 +125,12 @@ class ParserTests: XCTestCase {
         ]))
     }
     
+    // MARK: Assignment
+    
+    func test_211_assignment() {
+        XCTAssertEqual(try! Parser.parse("\"a\"=1"), Expression(Atom.String("a"), Expression(1)))
+    }
+    
     // MARK: Errors
 
     func test_201_unexpectedEOS() {
@@ -155,7 +161,12 @@ class ParserTests: XCTestCase {
         SWEXPThrow(Error.NonTerminatedQuotedString, try Parser.parse("(\"a\" \")"))
     }
     
-    func test_206_illegalHexCharacter() {
+    func test_206_missingAssignmentValue() {
+        SWEXPThrow(Error.MissingAssigmentValue, try Parser.parse("a="))
+        SWEXPThrow(Error.MissingAssigmentValue, try Parser.parse("a= "))
+    }
+    
+    func test_207_illegalHexCharacter() {
         SWEXPThrow(Error.IllegalHexCharacter(char: "x"), try Parser.parse("\"\\uxxxx\""))
         SWEXPThrow(Error.IllegalHexCharacter(char: " "), try Parser.parse("\"\\u    \""))
     }
