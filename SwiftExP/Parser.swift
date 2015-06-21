@@ -217,8 +217,8 @@ public struct Parser {
     static let decimalSeparatorChar: Character = "."
     static let divisionOperatorChar: Character = "/"
     static let integerChars  = digitChars
-    static let decimalChars  = digitChars.union(Set([decimalSeparatorChar]))
-    static let rationalChars = digitChars.union(Set([divisionOperatorChar]))
+    static let decimalChars  = digitChars.union([decimalSeparatorChar])
+    static let rationalChars = digitChars.union([divisionOperatorChar])
     static let numberChars   = [integerChars, decimalChars, rationalChars].reduce(Set()) { $0.union($1) }
     
     // MARK: Lexical level
