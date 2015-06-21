@@ -23,20 +23,14 @@ extension Error : Equatable {
 
 public func ==(lhs: Error, rhs: Error) -> Bool {
     switch (lhs, rhs) {
-        case (.UnexpectedEOS, .UnexpectedEOS):
-            return true
         case (.IllegalNumberFormat(let l), .IllegalNumberFormat(let r)):
             return l == r
         case (.IllegalEscapeSequence(let l), .IllegalEscapeSequence(let r)):
             return l == r
-        case (.NonTerminatedList, .NonTerminatedList):
-            return true
-        case (.NonTerminatedQuotedString, .NonTerminatedQuotedString):
-            return true
         case (.IllegalHexCharacter(let l), .IllegalHexCharacter(let r)):
             return l == r
         default:
-            return false
+            return lhs._code == rhs._code
     }
 }
 
