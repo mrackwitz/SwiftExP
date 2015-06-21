@@ -142,7 +142,7 @@ public struct Parser {
     }
     
     mutating func parseAtom() throws -> Atom {
-        if Parser.quotationChars.contains(scanner.currentChar!) {
+        if Parser.beginningQuotationChars.contains(scanner.currentChar!) {
             return try .String(readQuotedString())
         } else {
             let literalString = try readLiteral()
@@ -201,11 +201,22 @@ public struct Parser {
         }
     }
     
-    static let assignmentChar:  Character      = "="
+    static let assignmentChar: Character = "="
+    
+    /// These pair of chars start quoted string atom, which is not breaked
+    /// on whitespace or any other protected char, but only as soon as the
+    /// ending mark was hit, but they are maintained in the String itself.
+    static let maintainedQuotationChars: [Character : Character] = [
+        "[" : "]",
+    ]
+    
+    static let regularQuotationChars: Set<Character> = Set("'\"".characters)
+    
+    static let beginningQuotationChars = regularQuotationChars.union(maintainedQuotationChars.keys)
+    
     static let whitespaceChars: Set<Character> = Set(" \r\t\n".characters)
-    static let quotationChars:  Set<Character> = Set("'\"".characters)
     static let listChars:       Set<Character> = Set("()=".characters)
-    static let protectedChars = [whitespaceChars, quotationChars, listChars].reduce(Set()) { $0.union($1) }
+    static let protectedChars = [whitespaceChars, beginningQuotationChars, listChars].reduce(Set()) { $0.union($1) }
     
     static let digitChars: Set<Character> = Set("0123456789".characters)
     static let decimalSeparatorChar: Character = "."
@@ -219,31 +230,32 @@ public struct Parser {
     
     mutating func readQuotedString() throws -> String {
         // Skip the opening quotation mark
-        let quotationChar = try scanner.readChar()
+        let beginningQuotationChar = try scanner.readChar()
+        let endingQuotationChar = Parser.maintainedQuotationChars[beginningQuotationChar]
+            ?? beginningQuotationChar
         
-        var buffer = ""
-        while let char = scanner.currentChar where char != quotationChar {
-            try scanner.skipChar()
-            if char == "\\" {
-                buffer += try readEscapeSequence()
-            } else {
-                buffer.append(char)
-            }
-        }
+        let string = try readUntilOneOf(Set([endingQuotationChar]))
         
         // Skip the closing quotation mark if given, otherwise fail
         if scanner.eos {
             throw Error.NonTerminatedQuotedString
-        } else {
-            try scanner.skipChar()
         }
         
-        return buffer
+        try scanner.skipChar()
+        if Parser.maintainedQuotationChars[beginningQuotationChar] != nil {
+            return "\(beginningQuotationChar)\(string)\(endingQuotationChar)"
+        } else {
+            return string
+        }
     }
     
     mutating func readLiteral() throws -> String {
+        return try readUntilOneOf(Parser.protectedChars)
+    }
+    
+    mutating func readUntilOneOf(protectedChars: Set<Character>) throws -> String {
         var buffer = ""
-        while let char = scanner.currentChar where !Parser.protectedChars.contains(char) {
+        while let char = scanner.currentChar where !protectedChars.contains(char) {
             try scanner.skipChar()
             if char == "\\" {
                 buffer += try readEscapeSequence()

@@ -86,6 +86,10 @@ class ParserTests: XCTestCase {
         //XCTAssertEqual(try! Parser.parse("\"\\\r\n\""), Expression(""))
     }
     
+    func test_010_maintainedQuotationChars() {
+        XCTAssertEqual(try! Parser.parse("[a b]"), Expression("[a b]"))
+    }
+    
     // MARK: Lists
     
     func test_101_emptyList() {
