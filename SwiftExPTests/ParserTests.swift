@@ -93,37 +93,37 @@ class ParserTests: XCTestCase {
     // MARK: Lists
     
     func test_101_emptyList() {
-        XCTAssertEqual(try! Parser.parse("()"), .List([]))
-        XCTAssertEqual(try! Parser.parse("( )"), .List([]))
+        XCTAssertEqual(try! Parser.parse("()"),  Expression([]))
+        XCTAssertEqual(try! Parser.parse("( )"), Expression([]))
     }
     
     func test_102_listOfLists() {
-        XCTAssertEqual(try! Parser.parse("(()())"), .List([
+        XCTAssertEqual(try! Parser.parse("(()())"), Expression([
             .List([]),
             .List([]),
         ]))
-        XCTAssertEqual(try! Parser.parse("(() ())"), .List([
+        XCTAssertEqual(try! Parser.parse("(() ())"), Expression([
             .List([]),
             .List([]),
         ]))
     }
     
     func test_103_listOfStrings() {
-        XCTAssertEqual(try! Parser.parse("(a b)"), .List([
+        XCTAssertEqual(try! Parser.parse("(a b)"), Expression([
             Expression("a"),
             Expression("b")
         ]))
     }
     
     func test_104_listOfListOfStrings() {
-        XCTAssertEqual(try! Parser.parse("((a b) (c d))"), .List([
+        XCTAssertEqual(try! Parser.parse("((a b) (c d))"), Expression([
             .List([Expression("a"), Expression("b")]),
             .List([Expression("c"), Expression("d")]),
         ]))
     }
     
     func test_105_listOfListOfStrings() {
-        XCTAssertEqual(try! Parser.parse("(( a ) (b))"), .List([
+        XCTAssertEqual(try! Parser.parse("(( a ) (b))"), Expression([
             .List([Expression("a")]),
             .List([Expression("b")]),
         ]))
