@@ -25,6 +25,14 @@ func SWXPAssertThrow<E, T where E: Equatable>(expectedError: E, @autoclosure _ c
 }
 
 
+func SWXPAssertNoThrow(file: String = __FILE__, line: UInt = __LINE__, @noescape closure: () throws -> ()) {
+    do {
+        try closure()
+    } catch {
+        XCTFail("Catched unexpected error \"\(error)\".", file: file, line: line)
+    }
+}
+
 class ParserTests: XCTestCase {
     
     // MARK: Atoms
@@ -184,8 +192,10 @@ class ParserTests: XCTestCase {
     func test_301_swiftAstDump() {
         let bundle = NSBundle(forClass: ParserTests.self)
         let path = bundle.pathForResource("test", ofType: "swift-ast")!
-        let expr = try! Parser.parse(contentsOfFile: path)
-        XCTAssertEqual(String(expr), "")
+        SWXPAssertNoThrow {
+            let expr = try Parser.parse(contentsOfFile: path)
+            SWXPAssertEqual(String(expr), "")
+        }
     }
     
 }
