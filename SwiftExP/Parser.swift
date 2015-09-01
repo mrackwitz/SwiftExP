@@ -72,7 +72,7 @@ public struct Parser {
     - parameter string  The string to parse
     */
     public static func parse(string: String) throws -> Expression {
-        var parser = self(string: string)
+        var parser = self.init(string: string)
         return try parser.parse()
     }
     
