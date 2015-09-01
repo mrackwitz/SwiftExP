@@ -87,12 +87,12 @@ extension String {
     
     - parameter char  The character until which should be read
     */
-    public func readUntil(char: Character) -> (substring: String?, remainder: String) {
-        let parts = self.characters.split(char, maxSplit: 1, allowEmptySlices: false)
+    public func readUntil(char: Character) -> (substring: String, remainder: String)? {
+        let parts = self.characters.split(char, maxSplit: 2, allowEmptySlices: false)
         if parts.count > 1 {
             return (String(parts[0]), String(parts[1]))
         } else {
-            return (nil, self)
+            return nil
         }
     }
 }

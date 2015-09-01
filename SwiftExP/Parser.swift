@@ -173,32 +173,26 @@ public struct Parser {
     }
     
     func parseRational(string: String) throws -> Atom {
-        let (maybeNumeratorStr, denominatorStr) = string.readUntil(Parser.divisionOperatorChar)
-        if denominatorStr.isEmpty {
+        guard let (numeratorStr, denominatorStr) = string.readUntil(Parser.divisionOperatorChar)
+            where !denominatorStr.isEmpty else {
             throw Error.IllegalNumberFormat(numberString: string)
         }
-        if let numeratorStr = maybeNumeratorStr {
-            let numerator = Int(numeratorStr)!
-            let denominator = Int(denominatorStr)!
-            return .Decimal(Double(numerator) / Double(denominator))
-        } else {
-            throw Scanner.Error.EOS
-        }
+
+        let numerator = Int(numeratorStr)!
+        let denominator = Int(denominatorStr)!
+        return .Decimal(Double(numerator) / Double(denominator))
     }
     
     func parseDecimal(string: String) throws -> Atom {
-        let (maybeDecimalStr, mantissaStr) = string.readUntil(Parser.decimalSeparatorChar)
-        if mantissaStr.isEmpty {
+        guard let (decimalStr, mantissaStr) = string.readUntil(Parser.decimalSeparatorChar)
+            where !mantissaStr.isEmpty else {
             throw Error.IllegalNumberFormat(numberString: string)
         }
-        if let decimalStr = maybeDecimalStr {
-            let decimal = Int(decimalStr)!
-            let mantissa = Int(mantissaStr)!
-            let divident = (0 ..< Int(mantissaStr.characters.count)).reduce(1) { (a: Int, _) in return a * 10 }
-            return .Decimal(Double(decimal) + (Double(mantissa) / Double(divident)))
-        } else {
-            throw Scanner.Error.EOS
-        }
+
+        let decimal = Int(decimalStr)!
+        let mantissa = Int(mantissaStr)!
+        let divident = (0 ..< Int(mantissaStr.characters.count)).reduce(1) { (a: Int, _) in return a * 10 }
+        return .Decimal(Double(decimal) + (Double(mantissa) / Double(divident)))
     }
     
     static let assignmentChar: Character = "="
