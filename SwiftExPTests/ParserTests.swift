@@ -9,18 +9,21 @@
 import XCTest
 import SwiftExP
 
-func SWEXPThrow(expectedError: Error, @autoclosure _ closure: () throws -> (Expression)) -> () {
+
+func SWXPAssertThrow<E, T where E: Equatable>(expectedError: E, @autoclosure _ closure: () throws -> (T), file: String = __FILE__, line: UInt = __LINE__) -> () {
     do {
-        let unexpectedValue = try closure()
-        XCTFail("Expected error \"\(expectedError)\", but succeeded with value "
-            + "\(unexpectedValue)\".")
-    } catch let error where error is Error {
-        XCTAssertEqual(error as! Error, expectedError, "Catched error is from expected type, "
-            + "but not the expected case.")
+        let _ = try closure()
+        XCTFail("Expected error \"\(expectedError)\", but closure didn't threw "
+            + "an error.", file: file, line: line)
+    } catch let error as E {
+        XCTAssertEqual(error, expectedError, "Catched error is from expected "
+            + "type, but not the expected case.", file: file, line: line)
     } catch {
-        XCTFail("Catched error \"\(error)\", but not the expected type: \"\(expectedError)\"")
+        XCTFail("Catched error \"\(error)\", but not from the expected type "
+            + "\"\(expectedError)\".", file: file, line: line)
     }
 }
+
 
 class ParserTests: XCTestCase {
     
@@ -138,41 +141,42 @@ class ParserTests: XCTestCase {
     // MARK: Errors
 
     func test_201_unexpectedEOS() {
-        SWEXPThrow(Error.UnexpectedEOS, try Parser.parse(""))
-        SWEXPThrow(Error.UnexpectedEOS, try Parser.parse("\"\\u\""))
+        SWXPAssertThrow(Error.UnexpectedEOS, try Parser.parse(""))
+        SWXPAssertThrow(Error.UnexpectedEOS, try Parser.parse("\"\\u\""))
     }
     
     func test_202_illegalNumberFormat() {
-        SWEXPThrow(Error.IllegalNumberFormat(numberString: "1."),   try Parser.parse("1."))
-        SWEXPThrow(Error.IllegalNumberFormat(numberString: "1./2"), try Parser.parse("1./2"))
-        SWEXPThrow(Error.IllegalNumberFormat(numberString: "1/2."), try Parser.parse("1/2."))
-        SWEXPThrow(Error.IllegalNumberFormat(numberString: "1.2/"), try Parser.parse("1.2/"))
+        SWXPAssertThrow(Error.IllegalNumberFormat(numberString: "1."),   try Parser.parse("1."))
+        SWXPAssertThrow(Error.IllegalNumberFormat(numberString: "1./2"), try Parser.parse("1./2"))
+        SWXPAssertThrow(Error.IllegalNumberFormat(numberString: "1/2."), try Parser.parse("1/2."))
+        SWXPAssertThrow(Error.IllegalNumberFormat(numberString: "1.2/"), try Parser.parse("1.2/"))
     }
 
     func test_203_illegalEscapeSequence() {
-        SWEXPThrow(Error.IllegalEscapeSequence(escapeSequence: "\\i"), try Parser.parse("\\i"))
-        SWEXPThrow(Error.IllegalEscapeSequence(escapeSequence: "\\i"), try Parser.parse("\"\\i\""))
+        SWXPAssertThrow(Error.IllegalEscapeSequence(escapeSequence: "\\i"), try Parser.parse("\\i"))
+        SWXPAssertThrow(Error.IllegalEscapeSequence(escapeSequence: "\\i"), try Parser.parse("\"\\i\""))
     }
     
     func test_204_nonTerminatedList() {
-        SWEXPThrow(Error.NonTerminatedList, try Parser.parse("("))
-        SWEXPThrow(Error.NonTerminatedList, try Parser.parse("(()"))
-        SWEXPThrow(Error.NonTerminatedList, try Parser.parse("(()"))
+        SWXPAssertThrow(Error.NonTerminatedList, try Parser.parse("("))
+        SWXPAssertThrow(Error.NonTerminatedList, try Parser.parse("(()"))
+        SWXPAssertThrow(Error.NonTerminatedList, try Parser.parse("(()"))
     }
     
     func test_205_nonTerminatedQuotedString() {
-        SWEXPThrow(Error.NonTerminatedQuotedString, try Parser.parse("\""))
-        SWEXPThrow(Error.NonTerminatedQuotedString, try Parser.parse("(\"a\" \")"))
+        SWXPAssertThrow(Error.NonTerminatedQuotedString, try Parser.parse("\""))
+        SWXPAssertThrow(Error.NonTerminatedQuotedString, try Parser.parse("(\"a\" \")"))
     }
     
     func test_206_missingAssignmentValue() {
-        SWEXPThrow(Error.MissingAssigmentValue, try Parser.parse("a="))
-        SWEXPThrow(Error.MissingAssigmentValue, try Parser.parse("a= "))
+        SWXPAssertThrow(Error.MissingAssigmentValue, try Parser.parse("a="))
+        SWXPAssertThrow(Error.MissingAssigmentValue, try Parser.parse("a= "))
     }
     
     func test_207_illegalHexCharacter() {
-        SWEXPThrow(Error.IllegalHexCharacter(char: "x"), try Parser.parse("\"\\uxxxx\""))
-        SWEXPThrow(Error.IllegalHexCharacter(char: " "), try Parser.parse("\"\\u    \""))
+        SWXPAssertThrow(Error.IllegalHexCharacter(char: "x"), try Parser.parse("\"\\uxxxx\""))
+        SWXPAssertThrow(Error.IllegalHexCharacter(char: " "), try Parser.parse("\"\\u    \""))
+        SWXPAssertThrows(Error.IllegalHexCharacter(char: " ")) { try Parser.parse("\"\\u    \"") }
     }
     
     // MARK: Fixtures
