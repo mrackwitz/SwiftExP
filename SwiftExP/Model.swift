@@ -99,7 +99,7 @@ extension Expression : CustomStringConvertible {
             case .Atom(let x):
                 return "\(x)"
             case .List(let xs):
-                let jointXs = " ".join(xs.map { String($0) })
+                let jointXs = " ".join(xs.map { $0.description })
                 return "(\(jointXs))"
             case .Attribute(let identifier, let valueBox):
                 return "\(identifier)=\(valueBox.unbox)"
