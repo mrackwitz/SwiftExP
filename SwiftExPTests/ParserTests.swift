@@ -33,108 +33,125 @@ func SWXPAssertNoThrow(file: String = __FILE__, line: UInt = __LINE__, @noescape
     }
 }
 
+func SWXPAssertNoThrow<T>(@autoclosure closure: () throws -> (T), file: String = __FILE__, line: UInt = __LINE__) -> T? {
+    do {
+        return try closure()
+    } catch {
+        XCTFail("Catched unexpected error \"\(error)\".", file: file, line: line)
+    }
+    return nil
+}
+
+
+public func SWXPAssertEqual<T : Equatable>(@autoclosure expression1: () throws -> T?, @autoclosure _ expression2: () throws -> T?, _ message: String = "", file: String = __FILE__, line: UInt = __LINE__) {
+    let exp1 = SWXPAssertNoThrow(expression1, file: file, line: line) ?? nil
+    let exp2 = SWXPAssertNoThrow(expression2, file: file, line: line) ?? nil
+    XCTAssertEqual(exp1, exp2, message, file: file, line: line)
+}
+
+
 class ParserTests: XCTestCase {
     
     // MARK: Atoms
     
     func test_001_int() {
-        XCTAssertEqual(try! Parser.parse("1"), Expression(1))
+        SWXPAssertEqual(try Parser.parse("1"), Expression(1))
     }
     
     func test_002_rational() {
-        XCTAssertEqual(try! Parser.parse("1/2"), Expression(0.5))
+        SWXPAssertEqual(try Parser.parse("1/2"), Expression(0.5))
     }
     
     func test_003_decimal() {
-        XCTAssertEqual(try! Parser.parse("1.23"), Expression(1.23))
+        SWXPAssertEqual(try Parser.parse("1.23"), Expression(1.23))
     }
     
     func test_004_string() {
-        XCTAssertEqual(try! Parser.parse("a"),  Expression("a"))
-        XCTAssertEqual(try! Parser.parse("ab"), Expression("ab"))
+        SWXPAssertEqual(try Parser.parse("a"),  Expression("a"))
+        SWXPAssertEqual(try Parser.parse("ab"), Expression("ab"))
     }
     
     func test_005_quotedEmptyString() {
-        XCTAssertEqual(try! Parser.parse("\"\""),  Expression(""))
+        SWXPAssertEqual(try Parser.parse("\"\""),  Expression(""))
     }
     
     func test_006_quotedString() {
-        XCTAssertEqual(try! Parser.parse("\"a\""), Expression("a"))
+        SWXPAssertEqual(try Parser.parse("\"a\""), Expression("a"))
     }
     
     func test_006_quotedEscapedQuotationMark() {
-        XCTAssertEqual(try! Parser.parse("\"\\\"\""), Expression("\""))
+        SWXPAssertEqual(try Parser.parse("\"\\\"\""), Expression("\""))
     }
     
     func test_007_quotedSingleEscapeSequence() {
-        XCTAssertEqual(try! Parser.parse("\"\\t\""),  Expression("\t"))
-        XCTAssertEqual(try! Parser.parse("\"\\n\""),  Expression("\n"))
-        XCTAssertEqual(try! Parser.parse("\"\\r\""),  Expression("\r"))
-        XCTAssertEqual(try! Parser.parse("\"\\'\""),  Expression("'"))
-        XCTAssertEqual(try! Parser.parse("\"\\\\\""), Expression("\\"))
-        XCTAssertEqual(try! Parser.parse("\"\\b\""),  Expression("\u{8}")) // backspace
-        XCTAssertEqual(try! Parser.parse("\"\\v\""),  Expression("\u{b}")) // vertical tab
-        XCTAssertEqual(try! Parser.parse("\"\\f\""),  Expression("\u{c}")) // form-feed
+        SWXPAssertEqual(try Parser.parse("\"\\t\""),  Expression("\t"))
+        SWXPAssertEqual(try Parser.parse("\"\\n\""),  Expression("\n"))
+        SWXPAssertEqual(try Parser.parse("\"\\r\""),  Expression("\r"))
+        SWXPAssertEqual(try Parser.parse("\"\\'\""),  Expression("'"))
+        SWXPAssertEqual(try Parser.parse("\"\\\\\""), Expression("\\"))
+        SWXPAssertEqual(try Parser.parse("\"\\b\""),  Expression("\u{8}")) // backspace
+        SWXPAssertEqual(try Parser.parse("\"\\v\""),  Expression("\u{b}")) // vertical tab
+        SWXPAssertEqual(try Parser.parse("\"\\f\""),  Expression("\u{c}")) // form-feed
     }
     
     func test_008_quotedUnicodeEscapeSequence() {
-        XCTAssertEqual(try! Parser.parse("\"\\u2713\""), Expression("✓"))
-        XCTAssertEqual(try! Parser.parse("\"\\U0001F1FA\\U0001F1F8\""), Expression("🇺🇸"))
+        SWXPAssertEqual(try Parser.parse("\"\\u2713\""), Expression("✓"))
+        SWXPAssertEqual(try Parser.parse("\"\\U0001F1FA\\U0001F1F8\""), Expression("🇺🇸"))
     }
     
     func test_009_quotedNonEscapedLineWraps() {
-        XCTAssertEqual(try! Parser.parse("\"\n\""),   Expression("\n"))
-        XCTAssertEqual(try! Parser.parse("\"\n\r\""), Expression("\n\r"))
-        XCTAssertEqual(try! Parser.parse("\"\r\""),   Expression("\r"))
-        XCTAssertEqual(try! Parser.parse("\"\r\n\""), Expression("\r\n"))
+        SWXPAssertEqual(try Parser.parse("\"\n\""),   Expression("\n"))
+        SWXPAssertEqual(try Parser.parse("\"\n\r\""), Expression("\n\r"))
+        SWXPAssertEqual(try Parser.parse("\"\r\""),   Expression("\r"))
+        SWXPAssertEqual(try Parser.parse("\"\r\n\""), Expression("\r\n"))
     }
         
     func test_009_quotedEscapedLineWraps() {
-        XCTAssertEqual(try! Parser.parse("\"\\\n\""),   Expression(""))
-        XCTAssertEqual(try! Parser.parse("\"\\\n\r\""), Expression(""))
-        XCTAssertEqual(try! Parser.parse("\"\\\r\""),   Expression(""))
+        SWXPAssertEqual(try Parser.parse("\"\\\n\""),   Expression(""))
+        SWXPAssertEqual(try Parser.parse("\"\\\n\r\""), Expression(""))
+        SWXPAssertEqual(try Parser.parse("\"\\\r\""),   Expression(""))
         // TODO: Doesn't work
-        //XCTAssertEqual(try! Parser.parse("\"\\\r\n\""), Expression(""))
+        //SWXPAssertEqual(try Parser.parse("\"\\\r\n\""), Expression(""))
     }
     
     func test_010_maintainedQuotationChars() {
-        XCTAssertEqual(try! Parser.parse("[a b]"), Expression("[a b]"))
+        SWXPAssertEqual(try Parser.parse("[a b]"), Expression("[a b]"))
     }
     
     // MARK: Lists
     
     func test_101_emptyList() {
-        XCTAssertEqual(try! Parser.parse("()"),  Expression([]))
-        XCTAssertEqual(try! Parser.parse("( )"), Expression([]))
+        SWXPAssertEqual(try Parser.parse("()"),  Expression([]))
+        SWXPAssertEqual(try Parser.parse("( )"), Expression([]))
     }
     
     func test_102_listOfLists() {
-        XCTAssertEqual(try! Parser.parse("(()())"), Expression([
+        SWXPAssertEqual(try Parser.parse("(()())"), Expression([
             .List([]),
             .List([]),
         ]))
-        XCTAssertEqual(try! Parser.parse("(() ())"), Expression([
+        SWXPAssertEqual(try Parser.parse("(() ())"), Expression([
             .List([]),
             .List([]),
         ]))
     }
     
     func test_103_listOfStrings() {
-        XCTAssertEqual(try! Parser.parse("(a b)"), Expression([
+        SWXPAssertEqual(try Parser.parse("(a b)"), Expression([
             Expression("a"),
             Expression("b")
         ]))
     }
     
     func test_104_listOfListOfStrings() {
-        XCTAssertEqual(try! Parser.parse("((a b) (c d))"), Expression([
+        SWXPAssertEqual(try Parser.parse("((a b) (c d))"), Expression([
             .List([Expression("a"), Expression("b")]),
             .List([Expression("c"), Expression("d")]),
         ]))
     }
     
     func test_105_listOfListOfStrings() {
-        XCTAssertEqual(try! Parser.parse("(( a ) (b))"), Expression([
+        SWXPAssertEqual(try Parser.parse("(( a ) (b))"), Expression([
             .List([Expression("a")]),
             .List([Expression("b")]),
         ]))
@@ -143,7 +160,7 @@ class ParserTests: XCTestCase {
     // MARK: Assignment
     
     func test_211_assignment() {
-        XCTAssertEqual(try! Parser.parse("\"a\"=1"), Expression(Atom.String("a"), Expression(1)))
+        SWXPAssertEqual(try Parser.parse("\"a\"=1"), Expression(Atom.String("a"), Expression(1)))
     }
     
     // MARK: Errors
@@ -184,7 +201,7 @@ class ParserTests: XCTestCase {
     func test_207_illegalHexCharacter() {
         SWXPAssertThrow(Error.IllegalHexCharacter(char: "x"), try Parser.parse("\"\\uxxxx\""))
         SWXPAssertThrow(Error.IllegalHexCharacter(char: " "), try Parser.parse("\"\\u    \""))
-        SWXPAssertThrows(Error.IllegalHexCharacter(char: " ")) { try Parser.parse("\"\\u    \"") }
+        SWXPAssertThrow(Error.IllegalHexCharacter(char: " "), try Parser.parse("\"\\u    \""))
     }
     
     // MARK: Fixtures
