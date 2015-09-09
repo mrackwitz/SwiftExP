@@ -61,7 +61,7 @@ public struct Scanner {
         if eos {
             throw Error.EOS
         } else {
-            index = advance(index, 1)
+            index = index.advancedBy(1)
         }
     }
     
@@ -70,8 +70,8 @@ public struct Scanner {
     throws an error when the end of string is reached before.
     */
     public mutating func readChars(length: Int) throws -> String {
-        let advancedIndex = advance(index, length, string.endIndex)
-        if distance(index, advancedIndex) < length {
+        let advancedIndex = index.advancedBy(length, limit: string.endIndex)
+        if index.distanceTo(advancedIndex) < length {
             throw Error.EOS
         }
         let chars = string[index..<advancedIndex]

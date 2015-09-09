@@ -99,7 +99,7 @@ extension Expression : CustomStringConvertible {
             case .Atom(let x):
                 return "\(x)"
             case .List(let xs):
-                let jointXs = " ".join(xs.map { $0.description })
+                let jointXs = xs.map { $0.description }.joinWithSeparator(" ")
                 return "(\(jointXs))"
             case .Attribute(let identifier, let valueBox):
                 return "\(identifier)=\(valueBox.unbox)"
@@ -111,7 +111,7 @@ extension Atom : CustomStringConvertible {
     public var description: Swift.String {
         switch self {
             case .String(let x):
-                let escaped = "\\\"".join(x.characters.split("\"").map { Swift.String($0) })
+                let escaped = x.characters.split("\"").map { Swift.String($0) }.joinWithSeparator("\\\"")
                 return "\"\(escaped)\""
             case .Decimal(let x):
                 return "\(x)"
