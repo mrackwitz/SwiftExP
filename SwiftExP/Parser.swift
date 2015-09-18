@@ -203,6 +203,12 @@ public struct Parser {
     static let maintainedQuotationChars: [Character : Character] = [
         "[" : "]",
     ]
+
+    /// These pair of chars are allowed in string atom without quotes as
+    /// long as they appear balanced.
+    static let balancedLiteralParanthesisChars: [Character : Character] = [
+        "(" : ")",
+    ]
     
     static let regularQuotationChars: Set<Character> = Set("'\"".characters)
     
@@ -210,7 +216,7 @@ public struct Parser {
     
     static let whitespaceChars: Set<Character> = Set(" \r\t\n".characters)
     static let listChars:       Set<Character> = Set("()=".characters)
-    static let protectedChars = [whitespaceChars, beginningQuotationChars, listChars].reduce(Set()) { $0.union($1) }
+    static let protectedChars = [whitespaceChars, beginningQuotationChars, Set(")=".characters)].reduce(Set()) { $0.union($1) }
     
     static let digitChars: Set<Character> = Set("0123456789".characters)
     static let decimalSeparatorChar: Character = "."
@@ -249,12 +255,18 @@ public struct Parser {
     
     mutating func readUntilOneOf(protectedChars: Set<Character>) throws -> String {
         var buffer = ""
-        while let char = scanner.currentChar where !protectedChars.contains(char) {
+        var paranthesisStack: Array<Character> = []
+        while let char = scanner.currentChar where !paranthesisStack.isEmpty || !protectedChars.contains(char) {
             try scanner.skipChar()
             if char == "\\" {
                 buffer += try readEscapeSequence()
             } else {
                 buffer.append(char)
+                if char == paranthesisStack.last {
+                    paranthesisStack.popLast()
+                } else if let endChar = Parser.balancedLiteralParanthesisChars[char] {
+                    paranthesisStack.append(endChar)
+                }
             }
         }
         return buffer

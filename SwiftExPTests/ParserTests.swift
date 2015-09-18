@@ -160,7 +160,8 @@ class ParserTests: XCTestCase {
     // MARK: Assignment
     
     func test_211_assignment() {
-        SWXPAssertEqual(try Parser.parse("\"a\"=1"), Expression(Atom.String("a"), Expression(1)))
+        SWXPAssertEqual(try Parser.parse("\"a\"=1"),     Expression(Atom.String("a"), Expression(1)))
+        SWXPAssertEqual(try Parser.parse("\"a\"=b(c)d"), Expression(Atom.String("a"), Expression("b(c)d")))
     }
     
     // MARK: Errors
