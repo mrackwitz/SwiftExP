@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		29466BC11BAC1B6B007D2611 /* test.reserialized.swift-ast in Resources */ = {isa = PBXBuildFile; fileRef = 29466BC01BAC1B6B007D2611 /* test.reserialized.swift-ast */; settings = {ASSET_TAGS = (); }; };
 		29A0EAC11B327A01009DE2DF /* ParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29A0EAC01B327A01009DE2DF /* ParserTests.swift */; };
 		29A0EACD1B32C10A009DE2DF /* Parser+File.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29A0EACC1B32C10A009DE2DF /* Parser+File.swift */; };
 		29A0EACF1B32C2BC009DE2DF /* ModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29A0EACE1B32C2BC009DE2DF /* ModelTests.swift */; };
@@ -29,6 +30,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		29466BC01BAC1B6B007D2611 /* test.reserialized.swift-ast */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "test.reserialized.swift-ast"; sourceTree = "<group>"; };
 		29A0EAC01B327A01009DE2DF /* ParserTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ParserTests.swift; sourceTree = "<group>"; };
 		29A0EAC21B329E3D009DE2DF /* libswiftXCTest.tbd */ = {isa = PBXFileReference; lastKnownFileType = text; name = libswiftXCTest.tbd; path = System/Library/PrivateFrameworks/Swift/libswiftXCTest.tbd; sourceTree = SDKROOT; };
 		29A0EACC1B32C10A009DE2DF /* Parser+File.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Parser+File.swift"; sourceTree = "<group>"; };
@@ -75,6 +77,7 @@
 			isa = PBXGroup;
 			children = (
 				29A0EAD11B32C62E009DE2DF /* test.swift-ast */,
+				29466BC01BAC1B6B007D2611 /* test.reserialized.swift-ast */,
 			);
 			path = Fixtures;
 			sourceTree = "<group>";
@@ -220,6 +223,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				29466BC11BAC1B6B007D2611 /* test.reserialized.swift-ast in Resources */,
 				29A0EAD21B32C62E009DE2DF /* test.swift-ast in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

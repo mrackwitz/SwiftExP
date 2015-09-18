@@ -209,10 +209,17 @@ class ParserTests: XCTestCase {
     
     func test_301_swiftAstDump() {
         let bundle = NSBundle(forClass: ParserTests.self)
-        let path = bundle.pathForResource("test", ofType: "swift-ast")!
+        let pathToParse = bundle.pathForResource("test", ofType: "swift-ast")!
+        let pathToCompare = bundle.pathForResource("test.reserialized", ofType: "swift-ast")!
         SWXPAssertNoThrow {
-            let expr = try Parser.parse(contentsOfFile: path)
-            SWXPAssertEqual(String(expr), "")
+            let data = NSData(contentsOfFile: pathToCompare)!
+            let expectedString = NSString(data: data, encoding: NSUTF8StringEncoding)! as String
+            print(expectedString)
+
+            let expr = try Parser.parse(contentsOfFile: pathToParse)
+            let desc = expr!.prettyDescription()
+            print(desc)
+            SWXPAssertEqual(desc, expectedString)
         }
     }
     
