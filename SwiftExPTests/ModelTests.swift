@@ -16,7 +16,7 @@ private func assertDescription(expression: Expression, _ description: String) {
 class ModelTests: XCTestCase {
     
     func testString() {
-        assertDescription(.Atom(.String("a")),    "\"a\"")
+        assertDescription(.Atom(.String("a")),    "a")
         assertDescription(.Atom(.String("a b")),  "\"a b\"")
         assertDescription(.Atom(.String("a\"b")), "\"a\\\"b\"")
     }
@@ -32,11 +32,12 @@ class ModelTests: XCTestCase {
     }
     
     func testList() {
-        assertDescription(.List([.Atom(.String("a")), .Atom(.String("b"))]), "(\"a\" \"b\")")
+        assertDescription(.List([.Atom(.String("a")), .Atom(.String("b"))]), "(a b)")
     }
     
     func testAttribute() {
-        assertDescription(Expression(.String("a"), Expression(1)), "\"a\"=1")
+        assertDescription(Expression(.String("a"), Expression(1)),   "a=1")
+        assertDescription(Expression(.String("a b"), Expression(1)), "\"a b\"=1")
     }
     
 }

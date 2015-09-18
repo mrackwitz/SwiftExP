@@ -111,8 +111,12 @@ extension Atom : CustomStringConvertible {
     public var description: Swift.String {
         switch self {
             case .String(let x):
-                let escaped = x.characters.split("\"").map { Swift.String($0) }.joinWithSeparator("\\\"")
-                return "\"\(escaped)\""
+                if Parser.protectedChars.isDisjointWith(x.characters) {
+                    return x
+                } else {
+                    let escaped = x.characters.split("\"").map { Swift.String($0) }.joinWithSeparator("\\\"")
+                    return "\"\(escaped)\""
+                }
             case .Decimal(let x):
                 return "\(x)"
             case .Integer(let x):
