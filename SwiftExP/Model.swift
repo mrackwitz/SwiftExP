@@ -120,3 +120,37 @@ extension Atom : CustomStringConvertible {
         }
     }
 }
+
+
+protocol PrettyPrintable {
+    func prettyDescription(indentation: Swift.String) -> Swift.String
+}
+
+extension Expression : PrettyPrintable {
+    public func prettyDescription(indentation: Swift.String = "") -> Swift.String {
+        switch self {
+        case .List(let xs):
+            let incIndentation = indentation + "  "
+            let listDescription = xs.reduce("") { (var accu, element) in
+                if case .List(_) = element {
+                    accu += "\n\(element.prettyDescription(incIndentation))"
+                } else {
+                    if !accu.isEmpty {
+                        accu += " "
+                    }
+                    accu += "\(element)"
+                }
+                return accu
+            }
+            return indentation + "(" + listDescription + ")"
+        default:
+            return indentation + description
+        }
+    }
+}
+
+extension Atom : PrettyPrintable {
+    public func prettyDescription(indentation: Swift.String = "") -> Swift.String {
+        return indentation + description
+    }
+}
