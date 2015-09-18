@@ -1,0 +1,21 @@
+(source_file
+  (var_decl a type=Bool access=internal let storage_kind=stored)
+  (top_level_code_decl
+    (brace_stmt
+      (pattern_binding_decl
+        (pattern_named type=Bool a)
+        (prefix_unary_expr type=Bool location=a.swift:1:9 range="[a.swift:1:9 - line:1:10]"
+          (declref_expr type="(Bool) -> Bool" location=a.swift:1:9 range="[a.swift:1:9 - line:1:9]" decl="Swift.(file).!" specialized=no)
+          (call_expr implicit type=Bool location=a.swift:1:10 range="[a.swift:1:10 - line:1:10]"
+            (constructor_ref_call_expr implicit type="(_builtinBooleanLiteral: Int1) -> Bool" location=a.swift:1:10 range="[a.swift:1:10 - line:1:10]"
+              (declref_expr implicit type="Bool.Type -> (_builtinBooleanLiteral: Int1) -> Bool" location=a.swift:1:10 range="[a.swift:1:10 - line:1:10]" decl="Swift.(file).Bool.init(_builtinBooleanLiteral:)" specialized=no)
+              (type_expr implicit type=Bool.Type location=a.swift:1:10 range="[a.swift:1:10 - line:1:10]" typerepr=<<IMPLICIT>>))
+            (tuple_expr implicit type="(_builtinBooleanLiteral: Builtin.Int1)" location=a.swift:1:10 range="[a.swift:1:10 - line:1:10]" names=_builtinBooleanLiteral
+              (boolean_literal_expr type=Builtin.Int1 location=a.swift:1:10 range="[a.swift:1:10 - line:1:10]" value=true)))))))
+  (var_decl b type=Int access=internal let storage_kind=stored)
+  (top_level_code_decl
+    (brace_stmt
+      (pattern_binding_decl
+        (pattern_named type=Int b)
+        (forced_checked_cast_expr type=Int location=a.swift:1:26 range="[a.swift:1:24 - line:1:30]" value_cast writtenType=Int
+          (declref_expr type=Bool location=a.swift:1:24 range="[a.swift:1:24 - line:1:24]" decl="a.(file).a@a.swift:1:5" direct_to_storage specialized=no))))))

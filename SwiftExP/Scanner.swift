@@ -61,7 +61,7 @@ public struct Scanner {
         if eos {
             throw Error.EOS
         } else {
-            index = advance(index, 1)
+            index = index.advancedBy(1)
         }
     }
     
@@ -70,8 +70,8 @@ public struct Scanner {
     throws an error when the end of string is reached before.
     */
     public mutating func readChars(length: Int) throws -> String {
-        let advancedIndex = advance(index, length, string.endIndex)
-        if distance(index, advancedIndex) < length {
+        let advancedIndex = index.advancedBy(length, limit: string.endIndex)
+        if index.distanceTo(advancedIndex) < length {
             throw Error.EOS
         }
         let chars = string[index..<advancedIndex]
@@ -87,12 +87,12 @@ extension String {
     
     - parameter char  The character until which should be read
     */
-    public func readUntil(char: Character) -> (substring: String?, remainder: String) {
-        let parts = split(self.characters, maxSplit: 1, allowEmptySlices: false) { $0 == char }
+    public func readUntil(char: Character) -> (substring: String, remainder: String)? {
+        let parts = self.characters.split(char, maxSplit: 2, allowEmptySlices: false)
         if parts.count > 1 {
             return (String(parts[0]), String(parts[1]))
         } else {
-            return (nil, self)
+            return nil
         }
     }
 }

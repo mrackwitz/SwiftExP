@@ -13,6 +13,7 @@ public enum Error : ErrorType {
     case IllegalEscapeSequence(escapeSequence: String)
     case NonTerminatedList
     case NonTerminatedQuotedString
+    case MissingAssigmentValue
     case IllegalHexCharacter(char: Character)
 }
 
@@ -22,20 +23,14 @@ extension Error : Equatable {
 
 public func ==(lhs: Error, rhs: Error) -> Bool {
     switch (lhs, rhs) {
-        case (.UnexpectedEOS, .UnexpectedEOS):
-            return true
         case (.IllegalNumberFormat(let l), .IllegalNumberFormat(let r)):
             return l == r
         case (.IllegalEscapeSequence(let l), .IllegalEscapeSequence(let r)):
             return l == r
-        case (.NonTerminatedList, .NonTerminatedList):
-            return true
-        case (.NonTerminatedQuotedString, .NonTerminatedQuotedString):
-            return true
         case (.IllegalHexCharacter(let l), .IllegalHexCharacter(let r)):
             return l == r
         default:
-            return false
+            return lhs._code == rhs._code
     }
 }
 
@@ -57,6 +52,8 @@ extension Error : CustomStringConvertible {
                 return "NonTerminatedList"
             case .NonTerminatedQuotedString:
                 return "NonTerminatedQuotedString"
+            case .MissingAssigmentValue:
+                return "MissingAssigmentValue"
             case .IllegalHexCharacter(let x):
                 return "IllegalHexCharacter(\(x))"
         }
@@ -75,7 +72,7 @@ public struct Parser {
     - parameter string  The string to parse
     */
     public static func parse(string: String) throws -> Expression {
-        var parser = self(string: string)
+        var parser = self.init(string: string)
         return try parser.parse()
     }
     
@@ -94,11 +91,8 @@ public struct Parser {
     public mutating func parse() throws -> Expression {
         do {
             return try parseExpression()!
-        } catch let error where error is Scanner.Error {
-            switch (error as! Scanner.Error) {
-                case .EOS:
-                    throw Error.UnexpectedEOS
-            }
+        } catch Scanner.Error.EOS {
+            throw Error.UnexpectedEOS
         }
     }
     
@@ -116,7 +110,22 @@ public struct Parser {
             case nil:
                 throw Scanner.Error.EOS
             default:
-                return try parseAtom()
+                let atom = try parseAtom()
+                if let char = scanner.currentChar where char == Parser.assignmentChar {
+                    do {
+                        try scanner.skipChar()
+                        let maybeValue = try parseExpression()
+                        if let value = maybeValue {
+                            return Expression(atom, value)
+                        } else {
+                            throw Error.MissingAssigmentValue
+                        }
+                    } catch Scanner.Error.EOS {
+                        throw Error.MissingAssigmentValue
+                    }
+                } else {
+                    return .Atom(atom)
+                }
         }
     }
     
@@ -126,109 +135,138 @@ public struct Parser {
             while let expr = try parseExpression() {
                 list.append(expr)
             }
-            return .List(list)
+            return Expression(list)
         } catch Scanner.Error.EOS {
             throw Error.NonTerminatedList
         }
     }
     
-    mutating func parseAtom() throws -> Expression {
-        if Parser.quotationChars.contains(scanner.currentChar!) {
-            return try .StringAtom(readQuotedString())
+    mutating func parseAtom() throws -> Atom {
+        if Parser.beginningQuotationChars.contains(scanner.currentChar!) {
+            return try .String(readQuotedString())
         } else {
             let literalString = try readLiteral()
             precondition(literalString != "")
-            let literalStringSet = Set(literalString.characters)
-            if literalStringSet.isSubsetOf(Parser.numberChars) {
-                if literalStringSet.isSubsetOf(Parser.integerChars) {
-                    return .IntegerAtom(Int(literalString)!)
-                } else if literalStringSet.isSubsetOf(Parser.rationalChars) {
-                    return try parseRational(literalString)
-                } else if literalStringSet.isSubsetOf(Parser.decimalChars) {
-                    return try parseDecimal(literalString)
-                } else {
-                    throw Error.IllegalNumberFormat(numberString: literalString)
-                }
+            return try parseLiteral(literalString)
+        }
+    }
+    
+    func parseLiteral(literalString: String) throws -> Atom {
+        let literalStringSet = Set(literalString.characters)
+        if literalStringSet.isSubsetOf(Parser.numberChars) {
+            if literalStringSet.isSubsetOf(Parser.integerChars) {
+                return parseInteger(literalString)
+            } else if literalStringSet.isSubsetOf(Parser.rationalChars) {
+                return try parseRational(literalString)
+            } else if literalStringSet.isSubsetOf(Parser.decimalChars) {
+                return try parseDecimal(literalString)
             } else {
-                return .StringAtom(literalString)
+                throw Error.IllegalNumberFormat(numberString: literalString)
             }
+        } else {
+            return .String(literalString)
         }
     }
     
-    func parseRational(string: String) throws -> Expression {
-        let (maybeNumeratorStr, denominatorStr) = string.readUntil(Parser.divisionOperatorChar)
-        if denominatorStr.isEmpty {
-            throw Error.IllegalNumberFormat(numberString: string)
-        }
-        if let numeratorStr = maybeNumeratorStr {
-            let numerator = Int(numeratorStr)!
-            let denominator = Int(denominatorStr)!
-            return .DecimalAtom(Double(numerator) / Double(denominator))
-        } else {
-            throw Scanner.Error.EOS
-        }
+    func parseInteger(string: String) -> Atom {
+        return .Integer(Int(string)!)
     }
     
-    func parseDecimal(string: String) throws -> Expression {
-        let (maybeDecimalStr, mantissaStr) = string.readUntil(Parser.decimalSeparatorChar)
-        if mantissaStr.isEmpty {
+    func parseRational(string: String) throws -> Atom {
+        guard let (numeratorStr, denominatorStr) = string.readUntil(Parser.divisionOperatorChar)
+            where !denominatorStr.isEmpty else {
             throw Error.IllegalNumberFormat(numberString: string)
         }
-        if let decimalStr = maybeDecimalStr {
-            let decimal = Int(decimalStr)!
-            let mantissa = Int(mantissaStr)!
-            let divident = (0 ..< Int(mantissaStr.characters.count)).reduce(1) { (a: Int, _) in return a * 10 }
-            return .DecimalAtom(Double(decimal) + (Double(mantissa) / Double(divident)))
-        } else {
-            throw Scanner.Error.EOS
-        }
+
+        let numerator = Int(numeratorStr)!
+        let denominator = Int(denominatorStr)!
+        return .Decimal(Double(numerator) / Double(denominator))
     }
+    
+    func parseDecimal(string: String) throws -> Atom {
+        guard let (decimalStr, mantissaStr) = string.readUntil(Parser.decimalSeparatorChar)
+            where !mantissaStr.isEmpty else {
+            throw Error.IllegalNumberFormat(numberString: string)
+        }
+
+        let decimal = Int(decimalStr)!
+        let mantissa = Int(mantissaStr)!
+        let divident = (0 ..< Int(mantissaStr.characters.count)).reduce(1) { (a: Int, _) in return a * 10 }
+        return .Decimal(Double(decimal) + (Double(mantissa) / Double(divident)))
+    }
+    
+    static let assignmentChar: Character = "="
+    
+    /// These pair of chars start quoted string atom, which is not breaked
+    /// on whitespace or any other protected char, but only as soon as the
+    /// ending mark was hit, but they are maintained in the String itself.
+    static let maintainedQuotationChars: [Character : Character] = [
+        "[" : "]",
+    ]
+
+    /// These pair of chars are allowed in string atom without quotes as
+    /// long as they appear balanced.
+    static let balancedLiteralParanthesisChars: [Character : Character] = [
+        "(" : ")",
+    ]
+    
+    static let regularQuotationChars: Set<Character> = Set("'\"".characters)
+    
+    static let beginningQuotationChars = regularQuotationChars.union(maintainedQuotationChars.keys)
     
     static let whitespaceChars: Set<Character> = Set(" \r\t\n".characters)
-    static let quotationChars: Set<Character> = Set("\"".characters)
-    static let protectedChars: Set<Character> = Parser.whitespaceChars.union(Set("\"()".characters))
+    static let listChars:       Set<Character> = Set("()=".characters)
+    static let protectedChars = [whitespaceChars, beginningQuotationChars, Set(")=".characters)].reduce(Set()) { $0.union($1) }
+    
     static let digitChars: Set<Character> = Set("0123456789".characters)
-    static let integerChars = Parser.digitChars
     static let decimalSeparatorChar: Character = "."
-    static let decimalChars = Parser.digitChars.union(Set([Parser.decimalSeparatorChar]))
     static let divisionOperatorChar: Character = "/"
-    static let rationalChars = Parser.digitChars.union(Set([Parser.divisionOperatorChar]))
-    static let numberChars = Parser.decimalChars.union(Parser.rationalChars)
+    static let integerChars  = digitChars
+    static let decimalChars  = digitChars.union([decimalSeparatorChar])
+    static let rationalChars = digitChars.union([divisionOperatorChar])
+    static let numberChars   = [integerChars, decimalChars, rationalChars].reduce(Set()) { $0.union($1) }
     
     // MARK: Lexical level
     
     mutating func readQuotedString() throws -> String {
         // Skip the opening quotation mark
-        let quotationChar = try scanner.readChar()
+        let beginningQuotationChar = try scanner.readChar()
+        let endingQuotationChar = Parser.maintainedQuotationChars[beginningQuotationChar]
+            ?? beginningQuotationChar
         
-        var buffer = ""
-        while let char = scanner.currentChar where char != quotationChar {
-            try scanner.skipChar()
-            if char == "\\" {
-                buffer += try readEscapeSequence()
-            } else {
-                buffer.append(char)
-            }
-        }
+        let string = try readUntilOneOf(Set([endingQuotationChar]))
         
         // Skip the closing quotation mark if given, otherwise fail
         if scanner.eos {
             throw Error.NonTerminatedQuotedString
-        } else {
-            try scanner.skipChar()
         }
         
-        return buffer
+        try scanner.skipChar()
+        if Parser.maintainedQuotationChars[beginningQuotationChar] != nil {
+            return "\(beginningQuotationChar)\(string)\(endingQuotationChar)"
+        } else {
+            return string
+        }
     }
     
     mutating func readLiteral() throws -> String {
+        return try readUntilOneOf(Parser.protectedChars)
+    }
+    
+    mutating func readUntilOneOf(protectedChars: Set<Character>) throws -> String {
         var buffer = ""
-        while let char = scanner.currentChar where !Parser.protectedChars.contains(char) {
+        var paranthesisStack: Array<Character> = []
+        while let char = scanner.currentChar where !paranthesisStack.isEmpty || !protectedChars.contains(char) {
             try scanner.skipChar()
             if char == "\\" {
                 buffer += try readEscapeSequence()
             } else {
                 buffer.append(char)
+                if char == paranthesisStack.last {
+                    paranthesisStack.popLast()
+                } else if let endChar = Parser.balancedLiteralParanthesisChars[char] {
+                    paranthesisStack.append(endChar)
+                }
             }
         }
         return buffer
@@ -306,7 +344,7 @@ extension Character {
             case "d", "D": return 13
             case "e", "E": return 14
             case "f", "F": return 15
-        default:       throw Error.IllegalHexCharacter(char: self)
+            default:       throw Error.IllegalHexCharacter(char: self)
         }
     }
 }

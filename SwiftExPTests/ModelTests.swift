@@ -16,23 +16,28 @@ private func assertDescription(expression: Expression, _ description: String) {
 class ModelTests: XCTestCase {
     
     func testString() {
-        assertDescription(.StringAtom("a"),    "\"a\"")
-        assertDescription(.StringAtom("a b"),  "\"a b\"")
-        assertDescription(.StringAtom("a\"b"), "\"a\\\"b\"")
+        assertDescription(.Atom(.String("a")),    "a")
+        assertDescription(.Atom(.String("a b")),  "\"a b\"")
+        assertDescription(.Atom(.String("a\"b")), "\"a\\\"b\"")
     }
     
     func testDecimal() {
-        assertDescription(.DecimalAtom(0.5),       "0.5")
-        assertDescription(.DecimalAtom(13.37),     "13.37")
-        assertDescription(.DecimalAtom(1.0 / 3.0), "0.333333333333333")
+        assertDescription(.Atom(.Decimal(0.5)),       "0.5")
+        assertDescription(.Atom(.Decimal(13.37)),     "13.37")
+        assertDescription(.Atom(.Decimal(1.0 / 3.0)), "0.333333333333333")
     }
     
     func testInteger() {
-        assertDescription(.IntegerAtom(1), "1")
+        assertDescription(.Atom(.Integer(1)), "1")
     }
     
     func testList() {
-        assertDescription(.List([.StringAtom("a"), .StringAtom("b")]), "(\"a\" \"b\")")
+        assertDescription(.List([.Atom(.String("a")), .Atom(.String("b"))]), "(a b)")
+    }
+    
+    func testAttribute() {
+        assertDescription(Expression(.String("a"), Expression(1)),   "a=1")
+        assertDescription(Expression(.String("a b"), Expression(1)), "\"a b\"=1")
     }
     
 }
